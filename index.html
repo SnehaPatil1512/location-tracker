@@ -1,26 +1,25 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Tracker</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <link rel="stylesheet" href="style.css"/>
+    <title>Road Location Tracker</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
+
 <body>
 
-<h3>Tracker</h3>
+<h2>Road Location Tracker</h2>
+
+<button onclick="startTracking()">Start</button>
+<button onclick="stopTracking()">Stop</button>
 
 <div id="map"></div>
 
-<button id="startBtn">Start Tracking</button>
-<button id="stopBtn">Stop Tracking</button>
-
-<p>
-  Latitude: <span id="lat">-</span><br>
-  Longitude: <span id="lng">-</span>
-</p>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="script.js"></script>
 
 </body>
