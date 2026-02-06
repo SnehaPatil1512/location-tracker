@@ -161,58 +161,17 @@
 
 const ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImQ5MDQ0MzIwZTY4NTQxNWFiMWUxM2QwYWI3ZjQ1NTMzIiwiaCI6Im11cm11cjY0In0=";
 
-let map = L.map('map').setView([20,78],5);
+let map = L.map('map').setView([0,0],2);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png')
+.addTo(map);
 
 let marker = null;
 let polyline = L.polyline([], {color:'blue'}).addTo(map);
 
 let watchId = null;
 let lastPoint = null;
-let fullRoute = [];
-let routingLock = false;
-
-function haversine(p1,p2){
-    const R = 6371000;
-    const toRad = x => x * Math.PI / 180;
-
-    const dLat = toRad(p2.lat - p1.lat);
-    const dLng = toRad(p2.lng - p1.lng);
-
-    const a =
-        Math.sin(dLat/2)**2 +
-        Math.cos(toRad(p1.lat)) *
-        Math.cos(toRad(p2.lat)) *
-        Math.sin(dLng/2)**2;
-
-    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-}
-
-async function getRoute(start,end){
-
-    const res = await fetch(
-        "https://api.openrouteservice.org/v2/directions/driving-car/geojson",
-        {
-            method:"POST",
-            headers:{
-                "Authorization": ORS_API_KEY,
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                coordinates:[
-                    [start.lng,start.lat],
-                    [end.lng,end.lat]
-                ]
-            })
-        }
-    );
-
-    const data = await res.json();
-    const coords = data.features[0].geometry.coordinates;
-
-    return coords.map(c => [c[1],c[0]]);
-}
+let routePoints = [];
 
 navigator.geolocation.getCurrentPosition(pos => {
 
@@ -222,63 +181,74 @@ navigator.geolocation.getCurrentPosition(pos => {
     map.setView([lat,lng],15);
 
     marker = L.marker([lat,lng]).addTo(map);
-
     lastPoint = {lat,lng};
+
 });
+
+async function getRoadRoute(start,end){
+
+    const response = await fetch(
+        "https://api.openrouteservice.org/v2/directions/driving-car/geojson",
+        {
+            method:"POST",
+            headers:{
+                "Authorization": ORS_API_KEY,
+                "Content-Type":"application/json"
+            },
+            body: JSON.stringify({
+                coordinates:[
+                    [start.lng,start.lat],
+                    [end.lng,end.lat]
+                ]
+            })
+        }
+    );
+
+    const data = await response.json();
+
+    return data.features[0].geometry.coordinates.map(c => [c[1],c[0]]);
+}
 
 function startTracking(){
 
+    if(!navigator.geolocation){
+        alert("Geolocation not supported");
+        return;
+    }
+
     watchId = navigator.geolocation.watchPosition(
         updateLocation,
-        ()=>{},
+        err => alert(err.message),
         {enableHighAccuracy:true}
     );
 }
 
-async function updateLocation(position){
+async function updateLocation(pos){
 
-    const lat = position.coords.latitude;
-    const lng = position.coords.longitude;
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
 
-    const currentPoint = {lat,lng};
+    const current = {lat,lng};
 
-    if(marker) marker.setLatLng([lat,lng]);
+    if(lastPoint){
 
-    map.setView([lat,lng],16);
+        const roadSegment = await getRoadRoute(lastPoint,current);
 
-    if(!lastPoint) return;
-
-    if(haversine(lastPoint,currentPoint) < 25) return;
-
-    if(routingLock) return;
-
-    routingLock = true;
-
-    try{
-
-        const segment = await getRoute(lastPoint,currentPoint);
-
-        if(fullRoute.length === 0){
-            fullRoute = segment;
-        } else {
-            segment.shift();
-            fullRoute = fullRoute.concat(segment);
-        }
-
-        polyline.setLatLngs(fullRoute);
-
-        lastPoint = currentPoint;
-
-    } catch(e){
-        console.log(e);
+        routePoints = routePoints.concat(roadSegment);
+        polyline.setLatLngs(routePoints);
     }
 
-    routingLock = false;
+    lastPoint = current;
+
+    if(marker){
+        marker.setLatLng([lat,lng]);
+    }
+
+    map.setView([lat,lng],16);
 }
 
 function stopTracking(){
     if(watchId){
         navigator.geolocation.clearWatch(watchId);
-        watchId = null;
     }
 }
