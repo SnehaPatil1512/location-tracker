@@ -387,7 +387,7 @@ startBtn.onclick = () => {
       console.log("GPS Error:", err);
       },
       {
-        enableHighAccuracy: false,
+        enableHighAccuracy: true, //m-t, l-f
         maximumAge: 5000, //m-5000, l-10000
         timeout: 15000  //m-15000, l-20000 
       }
