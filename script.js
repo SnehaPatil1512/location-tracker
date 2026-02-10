@@ -198,7 +198,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 const ORS_API_KEY = "eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImQ5MDQ0MzIwZTY4NTQxNWFiMWUxM2QwYWI3ZjQ1NTMzIiwiaCI6Im11cm11cjY0In0=";
 
 const MIN_MOVE_METERS = 10;
-const ROUTE_DELAY = 2500;
+const ROUTE_DELAY = 1000;
 
 let watchId = null;
 let isTracking = false;
@@ -206,6 +206,7 @@ let lastRouteTime = 0;
 
 let marker = null;
 let lastPoint = null;
+let animationToken = 0;
 
 const polyline = L.polyline([], { color: "blue" }).addTo(map);
 
@@ -269,6 +270,39 @@ async function getRoute(from, to) {
   }
 }
 
+function animateMarker(route) {
+
+  animationToken++; 
+  const currentToken = animationToken;
+
+  let i = 0;
+
+  function step() {
+
+    if (!isTracking || currentToken !== animationToken) return;
+
+    if (i >= route.length) return;
+
+    const point = route[i];
+
+    marker.setLatLng(point);
+    polyline.addLatLng(point);
+
+    latEl.textContent = point[0].toFixed(6);
+    lngEl.textContent = point[1].toFixed(6);
+
+    map.setView(point, 17, { animate: true });
+
+    i++;
+
+    setTimeout(step, 120);
+  }
+
+  step();
+}
+
+
+
 async function handlePosition(position) {
 
   if (!isTracking) return;
@@ -297,21 +331,20 @@ async function handlePosition(position) {
 
   const route = await getRoute(lastPoint, newPoint);
 
-  if (route) {
-    route.forEach(p => polyline.addLatLng(p));
+  if (route && route.length > 0) {
 
-    const lastRoutePoint = route[route.length - 1];
-    marker.setLatLng(lastRoutePoint);
+  animateMarker(route);
 
-    map.panTo(lastRoutePoint, { animate: true, duration: 0.5 });
+} else {
 
-  } else {
-    polyline.addLatLng(newPoint);
-    marker.setLatLng(newPoint);
+  polyline.addLatLng(newPoint);
+  marker.setLatLng(newPoint);
 
-    map.panTo(newPoint, { animate: true, duration: 0.5 });
-  }
+  latEl.textContent = newPoint[0].toFixed(6);
+  lngEl.textContent = newPoint[1].toFixed(6);
 
+  map.setView(newPoint, 17, { animate: true });
+}
   lastPoint = newPoint;
 }
 
@@ -319,6 +352,11 @@ async function handlePosition(position) {
 startBtn.onclick = () => {
 
   if (isTracking) return;
+
+  if (!navigator.geolocation) {
+    alert("Geolocation is not supported on this device");
+    return;
+  }
 
   navigator.geolocation.getCurrentPosition((position) => {
 
@@ -346,8 +384,14 @@ startBtn.onclick = () => {
 
     watchId = navigator.geolocation.watchPosition(
       handlePosition,
-      console.error,
-      { enableHighAccuracy: true }
+      (err) => {
+      console.log("GPS Error:", err);
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 5000
+      }
     );
 
   }, console.error, { enableHighAccuracy: true });
@@ -358,9 +402,12 @@ stopBtn.onclick = () => {
 
   isTracking = false;
 
+  animationToken++; 
+
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
     watchId = null;
   }
 };
+
 

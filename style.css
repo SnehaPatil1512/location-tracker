@@ -8,7 +8,6 @@ body {
     height: 100vh;
 }
 
-/* Main Card */
 .app {
     width: 90%;
     max-width: 800px;
@@ -19,19 +18,16 @@ body {
     text-align: center;
 }
 
-/* Title */
 h2 {
     margin-top: 0;
 }
 
-/* Map */
 #map {
     height: 350px;
     border-radius: 12px;
     margin: 15px 0;
 }
 
-/* Buttons */
 .buttons {
     display: flex;
     gap: 15px;
@@ -48,7 +44,6 @@ button {
     transition: 0.3s;
 }
 
-/* Start Button */
 .start {
     background: #4CAF50;
     color: white;
@@ -58,7 +53,6 @@ button {
     background: #3fa043;
 }
 
-/* Stop Button */
 .stop {
     background: #f44336;
     color: white;
@@ -68,7 +62,6 @@ button {
     background: #da3b2f;
 }
 
-/* Coordinates */
 .coords {
     display: flex;
     justify-content: space-around;
