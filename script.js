@@ -301,8 +301,6 @@ function animateMarker(route) {
   step();
 }
 
-
-
 async function handlePosition(position) {
 
   if (!isTracking) return;
@@ -348,10 +346,11 @@ async function handlePosition(position) {
   lastPoint = newPoint;
 }
 
-
 startBtn.onclick = () => {
 
   if (isTracking) return;
+
+    lastRouteTime = 0; 
 
   if (!navigator.geolocation) {
     alert("Geolocation is not supported on this device");
@@ -388,9 +387,9 @@ startBtn.onclick = () => {
       console.log("GPS Error:", err);
       },
       {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 5000
+        enableHighAccuracy: false,
+        maximumAge: 5000, //m-5000, l-10000
+        timeout: 15000  //m-15000, l-20000 
       }
     );
 
@@ -398,11 +397,13 @@ startBtn.onclick = () => {
 
 };
 
+
 stopBtn.onclick = () => {
 
   isTracking = false;
 
-  animationToken++; 
+  animationToken++;
+  lastRouteTime = 0;  
 
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
