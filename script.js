@@ -299,28 +299,60 @@ async function handlePosition(position) {
 
   if (route) {
     route.forEach(p => polyline.addLatLng(p));
-    marker.setLatLng(route[route.length - 1]);
+
+    const lastRoutePoint = route[route.length - 1];
+    marker.setLatLng(lastRoutePoint);
+
+    map.panTo(lastRoutePoint, { animate: true, duration: 0.5 });
+
   } else {
     polyline.addLatLng(newPoint);
     marker.setLatLng(newPoint);
+
+    map.panTo(newPoint, { animate: true, duration: 0.5 });
   }
 
   lastPoint = newPoint;
 }
 
+
 startBtn.onclick = () => {
 
   if (isTracking) return;
 
-  isTracking = true;
+  navigator.geolocation.getCurrentPosition((position) => {
 
-  watchId = navigator.geolocation.watchPosition(
-    handlePosition,
-    console.error,
-    { enableHighAccuracy: true }
-  );
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+
+    const currentPoint = [lat, lng];
+
+    latEl.textContent = lat.toFixed(6);
+    lngEl.textContent = lng.toFixed(6);
+
+
+    polyline.setLatLngs([]);
+    lastPoint = currentPoint;
+    if (!marker) {
+      marker = L.marker(currentPoint).addTo(map);
+    } else {
+      marker.setLatLng(currentPoint);
+    }
+    map.setView(currentPoint, 17);
+
+    polyline.addLatLng(currentPoint);
+
+    isTracking = true;
+
+    watchId = navigator.geolocation.watchPosition(
+      handlePosition,
+      console.error,
+      { enableHighAccuracy: true }
+    );
+
+  }, console.error, { enableHighAccuracy: true });
+
 };
-
 
 stopBtn.onclick = () => {
 
@@ -328,5 +360,7 @@ stopBtn.onclick = () => {
 
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
+    watchId = null;
   }
 };
+
