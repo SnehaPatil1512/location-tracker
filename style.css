@@ -1,0 +1,95 @@
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Main Card */
+.app {
+    width: 90%;
+    max-width: 800px;
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    text-align: center;
+}
+
+/* Title */
+h2 {
+    margin-top: 0;
+}
+
+/* Map */
+#map {
+    height: 350px;
+    border-radius: 12px;
+    margin: 15px 0;
+}
+
+/* Buttons */
+.buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+button {
+    padding: 12px 22px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* Start Button */
+.start {
+    background: #4CAF50;
+    color: white;
+}
+
+.start:hover {
+    background: #3fa043;
+}
+
+/* Stop Button */
+.stop {
+    background: #f44336;
+    color: white;
+}
+
+.stop:hover {
+    background: #da3b2f;
+}
+
+/* Coordinates */
+.coords {
+    display: flex;
+    justify-content: space-around;
+}
+
+.coord-box {
+    background: #f4f6fa;
+    padding: 15px;
+    border-radius: 10px;
+    width: 40%;
+}
+
+.coord-box span {
+    font-size: 14px;
+    color: gray;
+}
+
+.coord-box p {
+    font-size: 18px;
+    margin: 5px 0 0;
+    font-weight: bold;
+}
+
+
